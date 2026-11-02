@@ -202,6 +202,32 @@ docker-compose up --build
 
 ---
 
+## 🗺️ Roadmap & Future Implementation Scope
+
+The following **5 features** are scheduled for future implementation, each designed to strictly adhere to our core engineering principles (**Zero AI/ML model training, zero security exploit tooling, and zero personal data collection**):
+
+1. **Real-Time WebSocket Telemetry Streaming (`/api/v1/ws/pulse`)**
+   - Direct bidirectional WebSocket connection between FastAPI and React, providing sub-millisecond hardware metric streams without HTTP polling overhead.
+   - *Strict Rule Verification*: Pure network transport protocol; transmits only anonymous hardware counters (`cpu_percent`, `memory_mb`).
+
+2. **Local Git Workspace Health Inspector (`/api/v1/git/status`)**
+   - Real-time local repository hygiene monitor displaying current branch, head commit SHA, unstaged file counters, and stash queue depth.
+   - *Strict Rule Verification*: Local read-only workspace inspection; completely strips author identities, emails, and commit signatures.
+
+3. **Configurable Saturation Threshold Alerts & Outbound Webhook Dispatcher (`/api/v1/alerts`)**
+   - Developer-defined resource saturation thresholds (e.g. `CPU > 85% for 10s`) that trigger in-app visual warnings and optional local JSON webhook events.
+   - *Strict Rule Verification*: Deterministic numerical threshold comparisons; zero attack or exploit logic.
+
+4. **Process Tree Resource Monitor (`/api/v1/system/processes`)**
+   - Non-privileged OS process table inspector tracking top resource-consuming binary processes (e.g. `node.exe`, `python.exe`, `docker.exe`).
+   - *Strict Rule Verification*: Standard OS task enumeration; captures only executable binary names and CPU/RAM percentages with zero access to user keystrokes or account data.
+
+5. **Local Service Latency & Microservice Health Prober (`/api/v1/benchmarks/probe`)**
+   - Developer diagnostic prober measuring HTTP response latency percentiles (P50, P95, P99) across internal development microservices.
+   - *Strict Rule Verification*: Strictly localhost-whitelisted diagnostic probe; zero external vulnerability scanning, brute-forcing, or penetration testing.
+
+---
+
 ## 🧩 How to Extend This Platform
 
 ### Adding a New Backend Endpoint
