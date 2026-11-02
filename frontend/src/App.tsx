@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Header } from './components/Header';
 import { MetricCard } from './components/MetricCard';
 import { PulseActivity } from './components/PulseActivity';
