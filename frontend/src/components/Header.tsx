@@ -1,5 +1,5 @@
 import React from 'react';
-import { Activity, ExternalLink, Sparkles } from 'lucide-react';
+import { Activity, ExternalLink } from 'lucide-react';
 import { HealthResponse } from '../types/api';
 
 interface HeaderProps {
