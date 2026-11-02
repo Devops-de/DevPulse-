@@ -194,4 +194,9 @@ docker-compose up --build
 ---
 
 ## 📄 License
-This project is open-source under the MIT License.
+This project is dual-licensed under both the **MIT License** and the **Apache License (Version 2.0)**:
+
+- [MIT License](LICENSE-MIT)
+- [Apache License 2.0](LICENSE-APACHE)
+
+You may choose to use this project under the terms of either license at your option. See [LICENSE](LICENSE) for details.

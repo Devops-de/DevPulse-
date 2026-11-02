@@ -7,6 +7,7 @@ name = "devpulse-backend"
 version = "0.1.0"
 description = "DevPulse - High-performance FastAPI backend starter boilerplate"
 readme = "README.md"
+license = { text = "MIT OR Apache-2.0" }
 requires-python = ">=3.10"
 dependencies = [
     "fastapi>=0.115.0",
