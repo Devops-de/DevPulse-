@@ -68,3 +68,5 @@ Thumbs.db
 # Local Personal Documents & Resume Generation
 *.pdf
 build_resume_pdf.py
+generate_pdf.py
+Pankaj_Rai_Resume.*
