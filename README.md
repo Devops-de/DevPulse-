@@ -12,6 +12,7 @@ DevPulse is an open-source, high-performance developer observability platform de
 - **Asynchronous ASGI Runtime**: Built on FastAPI and Uvicorn running an asynchronous event loop (`asyncio`) with `@asynccontextmanager` application lifespan management.
 - **Strict Data Contracts**: Request and response serializations are enforced strictly via **Pydantic v2** schemas (`BaseModel`, `Field`) with centralized 12-factor configuration through **pydantic-settings**.
 - **OS-Level Telemetry Engine**: Interfaces with kernel performance counters via `psutil` to sample hardware resource utilization (CPU multi-core percentage, memory footprint in MB, disk saturation) with graceful fallback simulation.
+- **Prometheus Observability (`/metrics`)**: Exposes native Prometheus text exposition metrics (Gauges and Counters) for ingestion by Prometheus server and Grafana dashboards.
 - **In-Memory Event Bus**: Implements a thread-safe circular buffer (`threading.Lock`) for ephemeral, low-latency developer event ingestion and dispatch.
 - **Zero-Setup Embedded UI**: FastAPI streams an interactive HTML5/Tailwind dashboard directly from the root `/` endpoint over ASGI without requiring an initial frontend compile step.
 
@@ -24,7 +25,8 @@ DevPulse is an open-source, high-performance developer observability platform de
 ### DevOps & Engineering Tooling
 - **Unified CLI Supervisor (`dev.py`)**: A cross-platform runner managing Python virtual environment isolation, dependency trees, concurrent multi-process orchestration, and test execution.
 - **Containerization**: Multi-container Docker orchestration (`docker-compose.yml`) separating backend (`python:3.12-slim`) and frontend (`node:20-alpine`) execution contexts.
-- **Automated Test Harness**: Integration and unit testing suite powered by `pytest` and FastAPI `TestClient` / `httpx`.
+- **Cloud-Native Deployment**: Production Kubernetes manifests (`deploy/k8s/`) with auto-discovery annotations and Terraform IaC (`deploy/terraform/`) for AWS ECS & CloudWatch monitoring.
+- **Automated CI/CD Pipeline**: GitHub Actions workflow (`.github/workflows/ci.yml`) automating backend testing, frontend builds, and Docker validation.
 
 ---
 
@@ -35,10 +37,12 @@ DevPulse is an open-source, high-performance developer observability platform de
 | **Runtime & Language** | Python 3.12 (Asynchronous ASGI via `asyncio`), TypeScript 5.6 (ES2020 target) |
 | **API Framework** | FastAPI 0.115+ with modular APIRouter versioning (`/api/v1`) and OpenAPI 3.1 schema auto-generation |
 | **Data Validation** | Pydantic v2 schemas (`BaseModel`, `Field`, `@field_validator`) guaranteeing type parity with frontend |
-| **Telemetry Engine** | Non-blocking OS-level resource sampling via `psutil` with simulated fallback metrics |
-| **Client Layer** | React 18 SPA built with Vite, Tailwind CSS utility styling, and Lucide vector icons |
+| **Observability & Metrics** | Native `/metrics` endpoint formatted for Prometheus & Grafana scrapers (RFC 0.0.4) |
+| **Infrastructure as Code** | Terraform (`deploy/terraform/main.tf`) provisioning AWS ECS & CloudWatch alarms |
+| **Container Orchestration**| Kubernetes Deployment & Service manifests (`deploy/k8s/`) with Liveness/Readiness probes |
+| **CI/CD Automation** | GitHub Actions multi-job workflow (`.github/workflows/ci.yml`) |
 | **Data & Privacy Guarantee** | Strictly anonymous, local machine telemetry; zero PII collection, zero external tracking pixels |
-| **Test Coverage** | `pytest` automated suite testing health checks, pulse endpoints, and event CRUD routes |
+| **Test Coverage** | `pytest` automated suite testing health checks, pulse endpoints, and Prometheus metrics |
 
 ---
 
@@ -46,6 +50,14 @@ DevPulse is an open-source, high-performance developer observability platform de
 
 ```
 DevPulse/
+├── .github/
+│   └── workflows/
+│       └── ci.yml               # GitHub Actions CI/CD pipeline
+├── deploy/                      # Cloud Engineering & Deployment
+│   ├── k8s/
+│   │   └── deployment.yaml      # Kubernetes Deployment & Service manifests
+│   └── terraform/
+│       └── main.tf              # AWS ECS & CloudWatch Terraform IaC
 ├── dev.py                       # Unified developer CLI manager
 ├── docker-compose.yml           # Container orchestration
 ├── .gitignore                   # Multi-stack gitignore
@@ -53,7 +65,7 @@ DevPulse/
 │
 ├── backend/                     # Python FastAPI Application
 │   ├── app/
-│   │   ├── main.py              # FastAPI app instance, CORS, lifespan, root UI
+│   │   ├── main.py              # FastAPI app instance, CORS, lifespan, /metrics
 │   │   ├── api/
 │   │   │   ├── router.py        # Central API router aggregator
 │   │   │   └── v1/
@@ -121,6 +133,7 @@ python dev.py dev
 ```
 - **Backend API**: `http://127.0.0.1:8000`
 - **Swagger Documentation**: `http://127.0.0.1:8000/docs`
+- **Prometheus Metrics**: `http://127.0.0.1:8000/metrics`
 - **Vite React SPA**: `http://localhost:5173`
 
 #### Option B: Backend Only (with Embedded Dashboard)
@@ -138,11 +151,12 @@ python dev.py frontend
 
 ## 🔌 API Endpoints Reference
 
-All endpoints are versioned under `/api/v1`:
+All endpoints are versioned under `/api/v1` (with `/metrics` exposed at root for scraper standard compatibility):
 
 | Method | Endpoint | Description |
 |---|---|---|
 | `GET` | `/` | DevPulse embedded developer dashboard |
+| `GET` | `/metrics` | Standard Prometheus exposition format for Prometheus & Grafana |
 | `GET` | `/docs` | Interactive Swagger OpenAPI documentation |
 | `GET` | `/redoc` | Interactive ReDoc API documentation |
 | `GET` | `/api/v1/health` | Service health status, uptime, and runtime info |
@@ -153,7 +167,26 @@ All endpoints are versioned under `/api/v1`:
 
 ### Sample Request & Response
 
-#### 1. Service Health Check
+#### 1. Prometheus Metrics Scrape
+```bash
+curl http://127.0.0.1:8000/metrics
+```
+```
+# HELP devpulse_cpu_percent Current CPU utilization percentage
+# TYPE devpulse_cpu_percent gauge
+devpulse_cpu_percent 14.2
+# HELP devpulse_memory_percent Current RAM utilization percentage
+# TYPE devpulse_memory_percent gauge
+devpulse_memory_percent 42.1
+# HELP devpulse_uptime_seconds Application uptime in seconds
+# TYPE devpulse_uptime_seconds counter
+devpulse_uptime_seconds 42.15
+# HELP devpulse_events_total Total developer pulse events recorded
+# TYPE devpulse_events_total counter
+devpulse_events_total 3
+```
+
+#### 2. Service Health Check
 ```bash
 curl http://127.0.0.1:8000/api/v1/health
 ```
@@ -169,12 +202,41 @@ curl http://127.0.0.1:8000/api/v1/health
 }
 ```
 
-#### 2. Create Pulse Event
-```bash
-curl -X POST http://127.0.0.1:8000/api/v1/metrics/events \
-  -H "Content-Type: application/json" \
-  -d '{"title": "Deploy to Staging", "category": "deploy", "status": "success", "details": "Build #42 passed"}'
-```
+---
+
+## ☁️ Cloud Engineering & DevOps Architecture
+
+DevPulse is architected with enterprise-grade cloud-native patterns matching modern Site Reliability Engineering (SRE) and DevOps practices:
+
+### 1. Prometheus & Grafana Native Observability (`GET /metrics`)
+- Exposes real-time system metrics directly in standard **Prometheus exposition format** (RFC 0.0.4) at `http://localhost:8000/metrics`.
+- Gauges: `devpulse_cpu_percent`, `devpulse_memory_percent`, `devpulse_memory_used_mb`, `devpulse_disk_percent`.
+- Counters: `devpulse_uptime_seconds`, `devpulse_events_total`.
+- Scrapeable directly by Prometheus servers and visualizable via pre-configured Grafana dashboards.
+
+### 2. Kubernetes Deployment & Pod Autoscaling (`deploy/k8s/`)
+- Production-ready `deployment.yaml` and `service.yaml` manifests.
+- Standard cloud-native annotations for Prometheus auto-discovery:
+  ```yaml
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8000"
+    prometheus.io/path: "/metrics"
+  ```
+- Dual health probes configured:
+  - **Liveness Probe**: `GET /api/v1/health` (container self-healing)
+  - **Readiness Probe**: `GET /api/v1/health` (traffic ingress routing)
+
+### 3. Infrastructure as Code (Terraform) (`deploy/terraform/`)
+- Modular **Terraform (`main.tf`)** targeting AWS ECS and CloudWatch infrastructure.
+- Automated CloudWatch Metric Alarm for CPU saturation breaches (>80%).
+- Declarative infrastructure management compliant with HashiCorp best practices.
+
+### 4. Automated CI/CD Pipeline (`.github/workflows/ci.yml`)
+- Multi-job GitHub Actions workflow triggering on push and pull requests:
+  - **Backend Job**: Sets up Python 3.12, caches dependencies, runs `pytest` suite.
+  - **Frontend Job**: Sets up Node.js 20, runs TypeScript compiler checks (`tsc`), and bundles Vite SPA.
+  - **Docker Validation**: Multi-stage build check ensuring zero image regressions.
 
 ---
 
