@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DevPulse - Developer Telemetry & Starter</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22%20100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @keyframes pulse-dot {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.4); opacity: 0.6; }
+    }
+    .pulse-indicator { animation: pulse-dot 2s infinite ease-in-out; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased selection:bg-indigo-500 selection:text-white">
+  
+  <!-- Header / Navigation -->
+  <header class="border-b border-slate-800 bg-slate-900/60 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+        </div>
+        <div>
+          <span class="font-bold text-lg tracking-tight bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">DevPulse</span>
+          <span class="text-xs ml-2 px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">v0.1.0</span>
+        </div>
+      </div>
+      
+      <div class="flex items-center space-x-3">
+        <div class="hidden sm:flex items-center space-x-2 text-xs text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-full border border-emerald-500/20">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 pulse-indicator"></span>
+          <span id="health-badge">FastAPI Active</span>
+        </div>
+        <a href="/docs" target="_blank" class="text-xs sm:text-sm font-medium px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition flex items-center space-x-1.5 shadow-sm">
+          <span>Swagger Docs</span>
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+        </a>
+        <a href="http://localhost:5173" target="_blank" class="text-xs sm:text-sm font-medium px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition hidden md:flex items-center space-x-1.5">
+          <span>React Dashboard</span>
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    
+    <!-- Hero / Starter Banner -->
+    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 border border-slate-800 p-6 sm:p-8">
+      <div class="max-w-2xl">
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+          Welcome to <span class="bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">DevPulse</span>
+        </h1>
+        <p class="mt-2 text-slate-400 text-sm sm:text-base">
+          A modern, production-ready starter boilerplate powered by <strong>FastAPI</strong> and a reactive dashboard. Clean separation of concerns, structured configuration, and live developer pulse metrics.
+        </p>
+        <div class="mt-4 flex flex-wrap gap-2 text-xs font-mono text-slate-400">
+          <span class="px-2.5 py-1 rounded bg-slate-800/80 border border-slate-700/60">Python 3.12+</span>
+          <span class="px-2.5 py-1 rounded bg-slate-800/80 border border-slate-700/60">FastAPI 0.115+</span>
+          <span class="px-2.5 py-1 rounded bg-slate-800/80 border border-slate-700/60">Pydantic v2</span>
+          <span class="px-2.5 py-1 rounded bg-slate-800/80 border border-slate-700/60">Vite + React SPA</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Telemetry Metrics Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <!-- Card 1: API Uptime -->
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition">
+        <div class="flex items-center justify-between text-slate-400 text-xs">
+          <span>API Uptime</span>
+          <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </div>
+        <div class="mt-2 flex items-baseline space-x-2">
+          <span id="uptime-val" class="text-2xl font-bold text-white">0s</span>
+          <span class="text-xs text-emerald-400 font-medium">operational</span>
+        </div>
+        <div class="mt-3 text-xs text-slate-500 flex justify-between">
+          <span>Env: <span id="env-val" class="text-slate-300">development</span></span>
+          <span id="py-ver" class="text-slate-400">Py 3.12</span>
+        </div>
+      </div>
+
+      <!-- Card 2: CPU Load -->
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition">
+        <div class="flex items-center justify-between text-slate-400 text-xs">
+          <span>CPU Utilization</span>
+          <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/></svg>
+        </div>
+        <div class="mt-2 flex items-baseline space-x-2">
+          <span id="cpu-val" class="text-2xl font-bold text-white">0%</span>
+        </div>
+        <div class="w-full bg-slate-800 rounded-full h-1.5 mt-3 overflow-hidden">
+          <div id="cpu-bar" class="bg-indigo-500 h-1.5 rounded-full transition-all duration-500" style="width: 10%"></div>
+        </div>
+      </div>
+
+      <!-- Card 3: Memory Usage -->
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition">
+        <div class="flex items-center justify-between text-slate-400 text-xs">
+          <span>RAM Utilization</span>
+          <svg class="w-4 h-4 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+        </div>
+        <div class="mt-2 flex items-baseline space-x-2">
+          <span id="mem-val" class="text-2xl font-bold text-white">0%</span>
+          <span id="mem-detail" class="text-xs text-slate-400">0 MB</span>
+        </div>
+        <div class="w-full bg-slate-800 rounded-full h-1.5 mt-3 overflow-hidden">
+          <div id="mem-bar" class="bg-violet-500 h-1.5 rounded-full transition-all duration-500" style="width: 25%"></div>
+        </div>
+      </div>
+
+      <!-- Card 4: Events Count -->
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition">
+        <div class="flex items-center justify-between text-slate-400 text-xs">
+          <span>Pulse Events</span>
+          <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+        </div>
+        <div class="mt-2 flex items-baseline space-x-2">
+          <span id="events-count" class="text-2xl font-bold text-white">0</span>
+          <span class="text-xs text-amber-400">tracked</span>
+        </div>
+        <div class="mt-3 text-xs text-slate-500 flex justify-between">
+          <span>Platform: <span id="platform-val" class="text-slate-300">System</span></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Event Stream & Quick Trigger -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      <!-- Activity Feed -->
+      <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-xl p-6">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h2 class="text-base font-semibold text-white">Recent Pulse Stream</h2>
+            <p class="text-xs text-slate-400">Real-time developer events recorded through API</p>
+          </div>
+          <span class="text-xs font-mono text-slate-500">Auto-refresh 3s</span>
+        </div>
+        <div id="events-list" class="space-y-3">
+          <div class="text-sm text-slate-500 text-center py-6">Connecting to telemetry stream...</div>
+        </div>
+      </div>
+
+      <!-- Quick Action: Dispatch Event -->
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 flex flex-col justify-between">
+        <div>
+          <h2 class="text-base font-semibold text-white">Trigger New Event</h2>
+          <p class="text-xs text-slate-400 mb-4">Post a custom pulse event to test the API.</p>
+          
+          <form id="event-form" class="space-y-3">
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">Event Title</label>
+              <input type="text" id="ev-title" required placeholder="e.g. Test Run Passed" 
+                class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">Category</label>
+              <select id="ev-cat" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
+                <option value="git">Git / Repository</option>
+                <option value="test">Testing</option>
+                <option value="build">Build / Compile</option>
+                <option value="deploy">Deployment</option>
+                <option value="general">General</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">Details (Optional)</label>
+              <input type="text" id="ev-details" placeholder="e.g. All 14 tests completed in 0.8s" 
+                class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
+            </div>
+            <button type="submit" id="btn-submit" 
+              class="w-full mt-2 bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2 rounded-lg text-sm transition shadow-md shadow-indigo-600/20">
+              Emit Pulse Event
+            </button>
+          </form>
+        </div>
+
+        <div class="mt-6 pt-4 border-t border-slate-800 text-xs text-slate-500 space-y-1">
+          <p>Quick Endpoints:</p>
+          <p><code class="text-indigo-400">GET /api/v1/health</code></p>
+          <p><code class="text-indigo-400">GET /api/v1/metrics/pulse</code></p>
+          <p><code class="text-indigo-400">POST /api/v1/metrics/events</code></p>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    async function fetchMetrics() {
+      try {
+        const [pulseRes, healthRes] = await Promise.all([
+          fetch('/api/v1/metrics/pulse'),
+          fetch('/api/v1/health')
+        ]);
+        
+        if (healthRes.ok) {
+          const h = await healthRes.json();
+          document.getElementById('uptime-val').innerText = `${Math.floor(h.uptime_seconds)}s`;
+          document.getElementById('env-val').innerText = h.environment;
+          document.getElementById('py-ver').innerText = `Py ${h.python_version}`;
+          document.getElementById('health-badge').innerText = 'API Healthy';
+        }
+
+        if (pulseRes.ok) {
+          const p = await pulseRes.json();
+          document.getElementById('cpu-val').innerText = `${p.system.cpu_percent}%`;
+          document.getElementById('cpu-bar').style.width = `${Math.min(p.system.cpu_percent, 100)}%`;
+
+          document.getElementById('mem-val').innerText = `${p.system.memory_percent}%`;
+          document.getElementById('mem-bar').style.width = `${Math.min(p.system.memory_percent, 100)}%`;
+          document.getElementById('mem-detail').innerText = `${p.system.memory_used_mb} MB`;
+
+          document.getElementById('platform-val').innerText = p.system.platform_name.split(' ')[0];
+          document.getElementById('events-count').innerText = p.total_events_recorded;
+
+          // Render event stream
+          const list = document.getElementById('events-list');
+          if (p.recent_events.length === 0) {
+            list.innerHTML = `<div class="text-sm text-slate-500 text-center py-4">No events yet.</div>`;
+          } else {
+            list.innerHTML = p.recent_events.map(ev => {
+              const time = new Date(ev.timestamp).toLocaleTimeString();
+              const badgeColors = {
+                success: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+                info: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
+                warning: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+                error: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
+              }[ev.status] || 'bg-slate-800 text-slate-300 border-slate-700';
+
+              return `
+                <div class="flex items-start justify-between p-3 rounded-lg bg-slate-950/60 border border-slate-800/80 hover:border-slate-700 transition">
+                  <div class="space-y-0.5">
+                    <div class="flex items-center space-x-2">
+                      <span class="text-xs px-2 py-0.5 rounded-full border ${badgeColors}">${ev.category}</span>
+                      <span class="text-sm font-medium text-slate-200">${ev.title}</span>
+                    </div>
+                    ${ev.details ? `<p class="text-xs text-slate-400 pl-1">${ev.details}</p>` : ''}
+                  </div>
+                  <span class="text-xs font-mono text-slate-500">${time}</span>
+                </div>
+              `;
+            }).join('');
+          }
+        }
+      } catch (err) {
+        console.error('Failed to poll metrics', err);
+        document.getElementById('health-badge').innerText = 'Offline / Error';
+      }
+    }
+
+    // Handle Form Submit
+    document.getElementById('event-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const title = document.getElementById('ev-title').value.trim();
+      const category = document.getElementById('ev-cat').value;
+      const details = document.getElementById('ev-details').value.trim();
+      if (!title) return;
+
+      try {
+        const res = await fetch('/api/v1/metrics/events', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title, category, status: 'success', details: details || null })
+        });
+        if (res.ok) {
+          document.getElementById('ev-title').value = '';
+          document.getElementById('ev-details').value = '';
+          fetchMetrics();
+        }
+      } catch (err) {
+        alert('Failed to emit event');
+      }
+    });
+
+    // Start polling
+    fetchMetrics();
+    setInterval(fetchMetrics, 3000);
+  </script>
+</body>
+</html>
