@@ -65,8 +65,6 @@ pnpm-debug.log*
 .DS_Store
 Thumbs.db
 
-# Local Personal Documents & Resume Generation
+# Local Personal Documents
 *.pdf
-build_resume_pdf.py
-generate_pdf.py
-Pankaj_Rai_Resume.*
+
