@@ -1,20 +1,44 @@
 # ⚡ DevPulse
 
-> **Production-ready, modular developer telemetry & dashboard starter template built with Python (FastAPI) and React (TypeScript + Tailwind CSS).**
+> **Decoupled full-stack developer telemetry and system observability platform engineered with Python (FastAPI) and React (TypeScript + Tailwind CSS).**
 
-DevPulse provides a clean, extensible architectural foundation for building developer tools, system health monitors, engineering telemetry dashboards, or modern full-stack web applications.
+DevPulse is an open-source, high-performance developer observability platform designed for real-time local environment monitoring and workflow event instrumentation. It provides a lightweight, asynchronous architectural foundation for tracking hardware utilization and developer lifecycle events with zero personal data collection, zero AI/ML training infrastructure, or external cloud dependencies.
 
 ---
 
-## 🚀 Key Features
+## 🔬 Technical Overview & Architecture
 
-- **⚡ FastAPI Backend**: Clean architecture with lifespan events, centralized configuration via `pydantic-settings`, structured logging, and automated OpenAPI (Swagger / ReDoc) documentation.
-- **🎨 Modern React Dashboard**: Built with Vite, React 18, TypeScript, Tailwind CSS, and Lucide icons.
-- **🖥️ Zero-Setup Embedded UI**: FastAPI serves a dark-themed responsive dashboard at `http://localhost:8000` out of the box, even before compiling the frontend SPA.
-- **🔄 Real-time Pulse Telemetry**: System telemetry (CPU, RAM, Disk) and live activity stream polling via clean REST endpoints.
-- **🛠️ Unified CLI Runner (`dev.py`)**: One-command dependency setup, isolated running, concurrent dev execution, and testing.
-- **🐳 Docker Ready**: Full multi-container `docker-compose.yml` for isolated containerized environments.
-- **🧪 Automated Tests**: Preconfigured `pytest` suite with `httpx` / FastAPI `TestClient`.
+### Backend Architecture (FastAPI & Python 3.12)
+- **Asynchronous ASGI Runtime**: Built on FastAPI and Uvicorn running an asynchronous event loop (`asyncio`) with `@asynccontextmanager` application lifespan management.
+- **Strict Data Contracts**: Request and response serializations are enforced strictly via **Pydantic v2** schemas (`BaseModel`, `Field`) with centralized 12-factor configuration through **pydantic-settings**.
+- **OS-Level Telemetry Engine**: Interfaces with kernel performance counters via `psutil` to sample hardware resource utilization (CPU multi-core percentage, memory footprint in MB, disk saturation) with graceful fallback simulation.
+- **In-Memory Event Bus**: Implements a thread-safe circular buffer (`threading.Lock`) for ephemeral, low-latency developer event ingestion and dispatch.
+- **Zero-Setup Embedded UI**: FastAPI streams an interactive HTML5/Tailwind dashboard directly from the root `/` endpoint over ASGI without requiring an initial frontend compile step.
+
+### Frontend Architecture (React 18 & TypeScript)
+- **Strict Typing**: Fully typed client layer matching backend Pydantic models across all telemetry payloads and event contracts.
+- **Reactive State & Polling**: Resilient polling routines (`useCallback`, `useEffect`) synchronized with backend metrics endpoints.
+- **Vite Bundler & Reverse Proxy**: Sub-millisecond HMR (Hot Module Replacement) with automated reverse-proxying (`/api` -> `127.0.0.1:8000`) eliminating CORS overhead during local development.
+- **Modular Component Design**: Clean atomic components (`Header`, `MetricCard`, `PulseActivity`, `QuickActions`) styled with Tailwind CSS utility classes and Lucide vector iconography.
+
+### DevOps & Engineering Tooling
+- **Unified CLI Supervisor (`dev.py`)**: A cross-platform runner managing Python virtual environment isolation, dependency trees, concurrent multi-process orchestration, and test execution.
+- **Containerization**: Multi-container Docker orchestration (`docker-compose.yml`) separating backend (`python:3.12-slim`) and frontend (`node:20-alpine`) execution contexts.
+- **Automated Test Harness**: Integration and unit testing suite powered by `pytest` and FastAPI `TestClient` / `httpx`.
+
+---
+
+## 🚀 Key Technical Specifications
+
+| Component | Technical Implementation & Specifications |
+|---|---|
+| **Runtime & Language** | Python 3.12 (Asynchronous ASGI via `asyncio`), TypeScript 5.6 (ES2020 target) |
+| **API Framework** | FastAPI 0.115+ with modular APIRouter versioning (`/api/v1`) and OpenAPI 3.1 schema auto-generation |
+| **Data Validation** | Pydantic v2 schemas (`BaseModel`, `Field`, `@field_validator`) guaranteeing type parity with frontend |
+| **Telemetry Engine** | Non-blocking OS-level resource sampling via `psutil` with simulated fallback metrics |
+| **Client Layer** | React 18 SPA built with Vite, Tailwind CSS utility styling, and Lucide vector icons |
+| **Data & Privacy Guarantee** | Strictly anonymous, local machine telemetry; zero PII collection, zero external tracking pixels |
+| **Test Coverage** | `pytest` automated suite testing health checks, pulse endpoints, and event CRUD routes |
 
 ---
 
@@ -178,7 +202,7 @@ docker-compose up --build
 
 ---
 
-## 🧩 How to Extend This Starter
+## 🧩 How to Extend This Platform
 
 ### Adding a New Backend Endpoint
 1. Define your Pydantic schemas in `backend/app/schemas/`.
