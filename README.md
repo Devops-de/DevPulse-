@@ -8,6 +8,17 @@ DevPulse is an open-source, high-performance developer observability platform de
 
 ## 📖 About DevPulse
 
+### 💡 The Project Idea: Origin & Concept
+**DevPulse** was conceived around a simple yet powerful idea: **every software project deserves real-time observability from the very first line of code, without requiring expensive enterprise SaaS subscriptions, heavy resident background daemons, or privacy compromises.**
+
+#### The Analogy: A "Vital Signs Monitor" for Developers
+Just like a medical telemetry monitor continuously tracks heart rate and oxygen saturation without interfering with the patient, **DevPulse acts as a non-intrusive vital signs monitor for your development environment**:
+* **Hardware Pulse**: Continuously reads non-privileged kernel counters (via `psutil`) to monitor CPU saturation, RAM footprint, disk I/O, and uptime in real time.
+* **Workflow Pulse**: Provides an asynchronous, thread-safe in-memory event bus to record developer lifecycle actions—such as test completions, git hooks, build events, and container lifecycle changes.
+* **Observability Bridge**: Translates local workstation telemetry directly into production-standard **Prometheus exposition metrics (`/metrics` - RFC 0.0.4)**. This means whatever you test locally on `localhost:8000` is immediately ready for Prometheus, Grafana, and Kubernetes clusters in production.
+
+---
+
 ### Project Vision & Mission
 **DevPulse** was created to bridge a critical gap in modern cloud-native software engineering: **immediate, lightweight developer environment observability without enterprise SaaS overhead or privacy compromises**.
 
