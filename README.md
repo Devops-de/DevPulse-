@@ -6,6 +6,42 @@ DevPulse is an open-source, high-performance developer observability platform de
 
 ---
 
+## 📖 About DevPulse
+
+### Project Vision & Mission
+**DevPulse** was created to bridge a critical gap in modern cloud-native software engineering: **immediate, lightweight developer environment observability without enterprise SaaS overhead or privacy compromises**.
+
+During day-to-day application development and microservice testing, developers frequently need insight into their local and containerized services:
+* Are CPU or memory thresholds saturated?
+* Is application uptime steady across restarts?
+* Are background events and operational triggers propagating through service layers?
+* Can local services export standard Prometheus metrics without setting up heavy daemon agents?
+
+DevPulse addresses these challenges with an ultra-lightweight, decoupled full-stack platform that runs anywhere in seconds—from a developer workstation to containerized Kubernetes clusters—with **zero external cloud dependencies**.
+
+---
+
+### The Problem DevPulse Solves
+Traditional Application Performance Monitoring (APM) tools (such as Datadog, New Relic, or Dynatrace) are powerful but often introduce significant friction during development and testing:
+* **Heavyweight Daemons**: Require resident background processes that consume significant RAM and CPU.
+* **Complex Account Provisioning**: Mandate cloud subscriptions, proprietary API keys, and outbound network access.
+* **Privacy & Telemetry Overhead**: Exfiltrate granular diagnostic data to external third-party cloud vendors.
+
+**DevPulse takes a local-first, privacy-respecting approach:**
+1. **Instant Observability**: Collects operating system performance counters (`psutil`) and serves them asynchronously over FastAPI in sub-milliseconds.
+2. **Prometheus-Native (`/metrics`)**: Emits metrics formatted according to Prometheus exposition standard (RFC 0.0.4), making local applications immediately scrapable by Prometheus, Grafana, or OpenTelemetry collectors.
+3. **Turnkey Cloud-Native Stack**: Comes with complete production Kubernetes manifests (`deploy/k8s/`), AWS ECS Terraform configurations (`deploy/terraform/`), and GitHub Actions CI/CD workflows out of the box.
+
+---
+
+### Core Principles & Guarantees
+* 🛡️ **Zero Personal Data Collection**: Operates strictly on anonymous hardware statistics (`cpu_percent`, `memory_percent`, `disk_percent`, `uptime_seconds`). Contains zero user databases, zero authentication cookies, and zero tracking pixels.
+* ⚡ **Zero AI/ML Infrastructure Bloat**: Engineered with deterministic, high-efficiency software engineering principles. Contains no heavy PyTorch/TensorFlow weights, training loops, or model evaluation harnesses.
+* 🔓 **Dual Open-Source Licensing**: Released under both the **MIT License** and **Apache 2.0 License**, ensuring maximum freedom for community and commercial use.
+* 🧩 **Decoupled Full-Stack Architecture**: Clean separation between the asynchronous Python FastAPI ASGI runtime and the reactive React 18 + TypeScript single-page application.
+
+---
+
 ## 🔬 Technical Overview & Architecture
 
 ### Backend Architecture (FastAPI & Python 3.12)
@@ -20,7 +56,7 @@ DevPulse is an open-source, high-performance developer observability platform de
 - **Strict Typing**: Fully typed client layer matching backend Pydantic models across all telemetry payloads and event contracts.
 - **Reactive State & Polling**: Resilient polling routines (`useCallback`, `useEffect`) synchronized with backend metrics endpoints.
 - **Vite Bundler & Reverse Proxy**: Sub-millisecond HMR (Hot Module Replacement) with automated reverse-proxying (`/api` -> `127.0.0.1:8000`) eliminating CORS overhead during local development.
-- **Modular Component Design**: Clean atomic components (`Header`, `MetricCard`, `PulseActivity`, `QuickActions`) styled with Tailwind CSS utility classes and Lucide vector iconography.
+- **Modular Component Design**: Clean atomic components (`Header`, `MetricCard`, `PulseActivity`, `QuickActions`, `AboutModal`) styled with Tailwind CSS utility classes and Lucide vector iconography.
 
 ### DevOps & Engineering Tooling
 - **Unified CLI Supervisor (`dev.py`)**: A cross-platform runner managing Python virtual environment isolation, dependency trees, concurrent multi-process orchestration, and test execution.
@@ -96,7 +132,8 @@ DevPulse/
     │   │   ├── Header.tsx       # App header with live status
     │   │   ├── MetricCard.tsx   # Visual KPI card with progress bars
     │   │   ├── PulseActivity.tsx# Live event feed
-    │   │   └── QuickActions.tsx # Event dispatch form
+    │   │   ├── QuickActions.tsx # Event dispatch form
+    │   │   └── AboutModal.tsx   # Interactive About & architecture modal
     │   ├── services/
     │   │   └── api.ts           # Typed API client connected to backend
     │   ├── types/
@@ -140,7 +177,7 @@ python dev.py dev
 ```bash
 python dev.py backend
 ```
-Visit `http://127.0.0.1:8000` in your browser to immediately interact with the embedded dashboard and live metrics.
+- Direct access to the live dashboard served via ASGI: `http://127.0.0.1:8000`
 
 #### Option C: Frontend Only
 ```bash
@@ -204,11 +241,9 @@ curl http://127.0.0.1:8000/api/v1/health
 
 ---
 
-## ☁️ Cloud Engineering & DevOps Architecture
+## ☁️ Cloud & DevOps Infrastructure
 
-DevPulse is architected with enterprise-grade cloud-native patterns matching modern Site Reliability Engineering (SRE) and DevOps practices:
-
-### 1. Prometheus & Grafana Native Observability (`GET /metrics`)
+### 1. Prometheus Observability (`GET /metrics`)
 - Exposes real-time system metrics directly in standard **Prometheus exposition format** (RFC 0.0.4) at `http://localhost:8000/metrics`.
 - Gauges: `devpulse_cpu_percent`, `devpulse_memory_percent`, `devpulse_memory_used_mb`, `devpulse_disk_percent`.
 - Counters: `devpulse_uptime_seconds`, `devpulse_events_total`.

@@ -1,13 +1,14 @@
 import React from 'react';
-import { Activity, ExternalLink } from 'lucide-react';
+import { Activity, ExternalLink, Info } from 'lucide-react';
 import { HealthResponse } from '../types/api';
 
 interface HeaderProps {
   health: HealthResponse | null;
   isLoading: boolean;
+  onOpenAbout?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ health, isLoading }) => {
+export const Header: React.FC<HeaderProps> = ({ health, isLoading, onOpenAbout }) => {
   return (
     <header className="border-b border-slate-800 bg-slate-900/60 backdrop-blur sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -37,6 +38,15 @@ export const Header: React.FC<HeaderProps> = ({ health, isLoading }) => {
               {isLoading ? 'Connecting...' : health ? 'FastAPI Online' : 'Backend Disconnected'}
             </span>
           </div>
+
+          <button
+            onClick={onOpenAbout}
+            className="inline-flex items-center space-x-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700/80 transition"
+            aria-label="About DevPulse"
+          >
+            <Info className="w-3.5 h-3.5 text-indigo-400" />
+            <span>About</span>
+          </button>
 
           <a
             href="http://localhost:8000/docs"
