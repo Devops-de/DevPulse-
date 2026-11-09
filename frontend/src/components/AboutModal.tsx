@@ -61,10 +61,10 @@ export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
             <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-1.5">
               <div className="flex items-center space-x-2 text-emerald-400 font-semibold text-xs">
                 <ShieldCheck className="w-4 h-4" />
-                <span>Zero Personal Data</span>
+                <span>Zero Data in Repository</span>
               </div>
               <p className="text-xs text-slate-400">
-                Operates strictly with anonymous machine counters. No personal data, tracking cookies, or external telemetry exfiltration.
+                100% Stateless. Contains zero personal data, zero user accounts, zero databases, and zero external datasets.
               </p>
             </div>
 

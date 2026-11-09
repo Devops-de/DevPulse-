@@ -8,6 +8,10 @@ DevPulse is an open-source, high-performance developer observability platform de
 
 ## 📖 About DevPulse
 
+> 🔒 **Stateless & Data-Free Guarantee:**  
+> **This repository contains strictly NO personal data, NO user records, NO database dumps, NO external datasets, and NO employer/client confidential information.**  
+> DevPulse is a pure, stateless software boilerplate and developer observability tool. All operational telemetry is ephemeral, read directly from non-privileged local system counters (`psutil`), kept in-memory, and never persisted to disk or transmitted to any remote servers.
+
 ### 💡 The Project Idea: Origin & Concept
 **DevPulse** was conceived around a simple yet powerful idea: **every software project deserves real-time observability from the very first line of code, without requiring expensive enterprise SaaS subscriptions, heavy resident background daemons, or privacy compromises.**
 
@@ -88,7 +92,7 @@ Traditional Application Performance Monitoring (APM) tools (such as Datadog, New
 | **Infrastructure as Code** | Terraform (`deploy/terraform/main.tf`) provisioning AWS ECS & CloudWatch alarms |
 | **Container Orchestration**| Kubernetes Deployment & Service manifests (`deploy/k8s/`) with Liveness/Readiness probes |
 | **CI/CD Automation** | GitHub Actions multi-job workflow (`.github/workflows/ci.yml`) |
-| **Data & Privacy Guarantee** | Strictly anonymous, local machine telemetry; zero PII collection, zero external tracking pixels |
+| **Data & Storage Policy** | **100% Stateless — Zero data stored in repository.** No databases, no user records, zero PII, zero external tracking pixels, zero external telemetry transmission. |
 | **Test Coverage** | `pytest` automated suite testing health checks, pulse endpoints, and Prometheus metrics |
 
 ---
