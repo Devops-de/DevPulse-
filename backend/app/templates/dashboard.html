@@ -327,6 +327,57 @@
   </div>
 
   <script>
+    function createEmptyEventsState() {
+      const empty = document.createElement('div');
+      empty.className = 'text-sm text-slate-500 text-center py-4';
+      empty.textContent = 'No events yet.';
+      return empty;
+    }
+
+    function renderEventRow(ev) {
+      const time = new Date(ev.timestamp).toLocaleTimeString();
+      const badgeColors = {
+        success: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+        info: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
+        warning: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+        error: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
+      }[ev.status] || 'bg-slate-800 text-slate-300 border-slate-700';
+
+      const row = document.createElement('div');
+      row.className = 'flex items-start justify-between p-3 rounded-lg bg-slate-950/60 border border-slate-800/80 hover:border-slate-700 transition';
+
+      const leftCol = document.createElement('div');
+      leftCol.className = 'space-y-0.5';
+
+      const titleRow = document.createElement('div');
+      titleRow.className = 'flex items-center space-x-2';
+
+      const badge = document.createElement('span');
+      badge.className = `text-xs px-2 py-0.5 rounded-full border ${badgeColors}`;
+      badge.textContent = String(ev.category ?? '');
+
+      const titleSpan = document.createElement('span');
+      titleSpan.className = 'text-sm font-medium text-slate-200';
+      titleSpan.textContent = String(ev.title ?? '');
+
+      titleRow.append(badge, titleSpan);
+      leftCol.appendChild(titleRow);
+
+      if (ev.details) {
+        const detailsP = document.createElement('p');
+        detailsP.className = 'text-xs text-slate-400 pl-1';
+        detailsP.textContent = String(ev.details);
+        leftCol.appendChild(detailsP);
+      }
+
+      const timeSpan = document.createElement('span');
+      timeSpan.className = 'text-xs font-mono text-slate-500';
+      timeSpan.textContent = time;
+
+      row.append(leftCol, timeSpan);
+      return row;
+    }
+
     async function fetchMetrics() {
       try {
         const [pulseRes, healthRes] = await Promise.all([
@@ -357,30 +408,9 @@
           // Render event stream
           const list = document.getElementById('events-list');
           if (p.recent_events.length === 0) {
-            list.innerHTML = `<div class="text-sm text-slate-500 text-center py-4">No events yet.</div>`;
+            list.replaceChildren(createEmptyEventsState());
           } else {
-            list.innerHTML = p.recent_events.map(ev => {
-              const time = new Date(ev.timestamp).toLocaleTimeString();
-              const badgeColors = {
-                success: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-                info: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
-                warning: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
-                error: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
-              }[ev.status] || 'bg-slate-800 text-slate-300 border-slate-700';
-
-              return `
-                <div class="flex items-start justify-between p-3 rounded-lg bg-slate-950/60 border border-slate-800/80 hover:border-slate-700 transition">
-                  <div class="space-y-0.5">
-                    <div class="flex items-center space-x-2">
-                      <span class="text-xs px-2 py-0.5 rounded-full border ${badgeColors}">${ev.category}</span>
-                      <span class="text-sm font-medium text-slate-200">${ev.title}</span>
-                    </div>
-                    ${ev.details ? `<p class="text-xs text-slate-400 pl-1">${ev.details}</p>` : ''}
-                  </div>
-                  <span class="text-xs font-mono text-slate-500">${time}</span>
-                </div>
-              `;
-            }).join('');
+            list.replaceChildren(...p.recent_events.map(renderEventRow));
           }
         }
       } catch (err) {

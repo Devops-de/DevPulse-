@@ -17,6 +17,7 @@ def test_root_dashboard(client: TestClient) -> None:
     response = client.get("/")
     assert response.status_code == 200
     assert "DevPulse" in response.text
+    assert "innerHTML" not in response.text
 
 
 def test_prometheus_metrics(client: TestClient) -> None:
