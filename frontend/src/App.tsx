@@ -1,38 +1,60 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { Header } from './components/Header';
 import { MetricCard } from './components/MetricCard';
 import { PulseActivity } from './components/PulseActivity';
 import { QuickActions } from './components/QuickActions';
+import { AboutSection } from './components/AboutSection';
 import { AboutModal } from './components/AboutModal';
 import { fetchHealth, fetchPulseSummary } from './services/api';
 import { HealthResponse, MetricSummary } from './types/api';
-import { Cpu, HardDrive, Server, Layers, ShieldCheck, Info, Sparkles, BookOpen } from 'lucide-react';
+import { Cpu, HardDrive, Server, Layers, ShieldCheck } from 'lucide-react';
+
+const POLL_INTERVAL_MS = 3000;
+const CORE_STACK = ['FastAPI', 'React 18', 'TypeScript', 'Tailwind CSS'] as const;
 
 export function App() {
   const [health, setHealth] = useState<HealthResponse | null>(null);
   const [pulse, setPulse] = useState<MetricSummary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
+  const abortRef = useRef<AbortController | null>(null);
 
   const loadData = useCallback(async () => {
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     try {
       const [healthData, pulseData] = await Promise.all([
-        fetchHealth().catch(() => null),
-        fetchPulseSummary().catch(() => null),
+        fetchHealth(controller.signal).catch((err) => {
+          if (err instanceof DOMException && err.name === 'AbortError') throw err;
+          return null;
+        }),
+        fetchPulseSummary(controller.signal).catch((err) => {
+          if (err instanceof DOMException && err.name === 'AbortError') throw err;
+          return null;
+        }),
       ]);
-      if (healthData) setHealth(healthData);
+      setHealth(healthData);
       if (pulseData) setPulse(pulseData);
     } catch (err) {
-      console.error('Error fetching dashboard telemetry:', err);
+      if (!(err instanceof DOMException && err.name === 'AbortError')) {
+        console.error('Error fetching dashboard telemetry:', err);
+      }
     } finally {
-      setIsLoading(false);
+      if (!controller.signal.aborted) {
+        setIsLoading(false);
+      }
     }
   }, []);
 
   useEffect(() => {
     loadData();
-    const timer = setInterval(loadData, 3000);
-    return () => clearInterval(timer);
+    const timer = window.setInterval(loadData, POLL_INTERVAL_MS);
+    return () => {
+      window.clearInterval(timer);
+      abortRef.current?.abort();
+    };
   }, [loadData]);
 
   return (
@@ -44,17 +66,25 @@ export function App() {
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 border border-slate-800 p-6 sm:p-8">
           <div className="max-w-2xl">
             <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-              DevPulse <span className="bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">Full-Stack Starter</span>
+              DevPulse{' '}
+              <span className="bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">
+                Full-Stack Starter
+              </span>
             </h1>
             <p className="mt-2 text-slate-400 text-sm sm:text-base leading-relaxed">
-              Modular Python FastAPI backend paired with a Vite + React TypeScript dashboard.
-              Ready for immediate extension with clean architecture, typed schemas, and real-time pulse monitoring.
+              Modular Python FastAPI backend paired with a Vite + React TypeScript dashboard. Ready
+              for immediate extension with clean architecture, typed schemas, and real-time pulse
+              monitoring.
             </p>
             <div className="mt-4 flex flex-wrap gap-2 text-xs font-mono text-slate-300">
-              <span className="px-2.5 py-1 rounded bg-slate-800/80 border border-slate-700/60">FastAPI</span>
-              <span className="px-2.5 py-1 rounded bg-slate-800/80 border border-slate-700/60">React 18</span>
-              <span className="px-2.5 py-1 rounded bg-slate-800/80 border border-slate-700/60">TypeScript</span>
-              <span className="px-2.5 py-1 rounded bg-slate-800/80 border border-slate-700/60">Tailwind CSS</span>
+              {CORE_STACK.map((label) => (
+                <span
+                  key={label}
+                  className="px-2.5 py-1 rounded bg-slate-800/80 border border-slate-700/60"
+                >
+                  {label}
+                </span>
+              ))}
             </div>
           </div>
         </div>
@@ -115,10 +145,7 @@ export function App() {
         {/* Main Grid: Stream & Action */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
-            <PulseActivity
-              events={pulse?.recent_events || []}
-              isLoading={isLoading}
-            />
+            <PulseActivity events={pulse?.recent_events || []} isLoading={isLoading} />
           </div>
           <div>
             <QuickActions onEventCreated={loadData} />
@@ -126,58 +153,7 @@ export function App() {
         </div>
 
         {/* About Section */}
-        <section className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-5">
-            <div className="flex items-center space-x-3">
-              <div className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                <Info className="w-5 h-5" />
-              </div>
-              <div>
-                <h2 className="text-lg font-bold text-white tracking-tight">About DevPulse</h2>
-                <p className="text-xs text-slate-400">Decoupled developer telemetry &amp; cloud observability starter</p>
-              </div>
-            </div>
-            <button
-              onClick={() => setIsAboutOpen(true)}
-              className="inline-flex items-center self-start sm:self-auto space-x-2 text-xs font-medium px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition shadow-sm"
-            >
-              <BookOpen className="w-3.5 h-3.5" />
-              <span>Full Specifications &amp; Overview</span>
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <div className="space-y-2">
-              <div className="flex items-center space-x-2 text-xs font-semibold text-slate-200 uppercase tracking-wider">
-                <Sparkles className="w-4 h-4 text-indigo-400" />
-                <span>The Vision</span>
-              </div>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                DevPulse offers an ultra-lightweight, self-hosted alternative to heavy enterprise APM suites. It delivers immediate local observability for backend services, containers, and development environments with zero cloud vendor lock-in.
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center space-x-2 text-xs font-semibold text-slate-200 uppercase tracking-wider">
-                <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                <span>Privacy &amp; Compliance</span>
-              </div>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Strictly anonymous, local-only machine counters. Absolutely zero Personally Identifiable Information (PII) collection, zero external tracking pixels, and zero AI/ML training infrastructure.
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center space-x-2 text-xs font-semibold text-slate-200 uppercase tracking-wider">
-                <Server className="w-4 h-4 text-violet-400" />
-                <span>Production Architecture</span>
-              </div>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Asynchronous FastAPI ASGI runtime exposing standard Prometheus exposition metrics (<code className="text-slate-300">/metrics</code>), paired with a reactive React 18 TypeScript SPA and automated GitHub Actions CI/CD.
-              </p>
-            </div>
-          </div>
-        </section>
+        <AboutSection onOpenModal={() => setIsAboutOpen(true)} />
       </main>
 
       <footer className="border-t border-slate-800 py-6 text-center text-xs text-slate-500">

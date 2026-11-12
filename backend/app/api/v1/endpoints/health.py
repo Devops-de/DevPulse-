@@ -1,6 +1,8 @@
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+
 from fastapi import APIRouter
+
 from app.core.config import settings
 from app.schemas.health import HealthResponse
 from app.services.pulse_service import pulse_service
@@ -22,6 +24,6 @@ async def get_health() -> HealthResponse:
         version=settings.VERSION,
         environment=settings.ENVIRONMENT,
         uptime_seconds=pulse_service.uptime_seconds,
-        timestamp=datetime.now(timezone.utc),
+        timestamp=datetime.now(UTC),
         python_version=sys.version.split()[0],
     )

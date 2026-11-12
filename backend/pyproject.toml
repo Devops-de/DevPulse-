@@ -15,6 +15,7 @@ dependencies = [
     "pydantic>=2.7.0",
     "pydantic-settings>=2.3.0",
     "python-dotenv>=1.0.0",
+    "psutil>=5.9.0",
 ]
 
 [project.optional-dependencies]
@@ -34,5 +35,5 @@ line-length = 100
 target-version = "py312"
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "W", "UP"]
+select = ["E", "F", "I", "W", "UP", "B", "SIM"]
 ignore = []

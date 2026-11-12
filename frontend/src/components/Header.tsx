@@ -8,7 +8,17 @@ interface HeaderProps {
   onOpenAbout?: () => void;
 }
 
+const API_ORIGIN = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+
 export const Header: React.FC<HeaderProps> = ({ health, isLoading, onOpenAbout }) => {
+  const isOnline = Boolean(health);
+  const badgeStyle = isLoading
+    ? 'border-amber-500/20 bg-amber-500/10 text-amber-400'
+    : isOnline
+      ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400'
+      : 'border-rose-500/20 bg-rose-500/10 text-rose-400';
+  const dotStyle = isLoading ? 'bg-amber-400' : isOnline ? 'bg-emerald-400' : 'bg-rose-400';
+
   return (
     <header className="border-b border-slate-800 bg-slate-900/60 backdrop-blur sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -32,14 +42,17 @@ export const Header: React.FC<HeaderProps> = ({ health, isLoading, onOpenAbout }
         </div>
 
         <div className="flex items-center space-x-3">
-          <div className="flex items-center space-x-2 text-xs px-3 py-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 text-emerald-400">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 pulse-indicator" />
+          <div
+            className={`flex items-center space-x-2 text-xs px-3 py-1.5 rounded-full border ${badgeStyle}`}
+          >
+            <span className={`w-2 h-2 rounded-full pulse-indicator ${dotStyle}`} />
             <span className="font-medium">
-              {isLoading ? 'Connecting...' : health ? 'FastAPI Online' : 'Backend Disconnected'}
+              {isLoading ? 'Connecting...' : isOnline ? 'FastAPI Online' : 'Backend Disconnected'}
             </span>
           </div>
 
           <button
+            type="button"
             onClick={onOpenAbout}
             className="inline-flex items-center space-x-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700/80 transition"
             aria-label="About DevPulse"
@@ -49,7 +62,7 @@ export const Header: React.FC<HeaderProps> = ({ health, isLoading, onOpenAbout }
           </button>
 
           <a
-            href="http://localhost:8000/docs"
+            href={`${API_ORIGIN}/docs`}
             target="_blank"
             rel="noreferrer"
             className="hidden sm:inline-flex items-center space-x-1.5 text-xs font-medium px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition shadow-sm shadow-indigo-600/30"

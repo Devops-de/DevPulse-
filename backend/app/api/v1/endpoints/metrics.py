@@ -1,5 +1,5 @@
-from typing import List
 from fastapi import APIRouter, Query, status
+
 from app.schemas.metrics import (
     MetricSummary,
     PulseEvent,
@@ -15,7 +15,9 @@ router = APIRouter()
     "/pulse",
     response_model=MetricSummary,
     summary="Get Pulse Overview",
-    description="Retrieves a complete snapshot of system metrics, service status, and recent activity.",
+    description=(
+        "Retrieves a complete snapshot of system metrics, service status, and recent activity."
+    ),
 )
 async def get_pulse_summary() -> MetricSummary:
     """Returns aggregated system metrics and recent events."""
@@ -35,13 +37,13 @@ async def get_system_metrics() -> SystemMetric:
 
 @router.get(
     "/events",
-    response_model=List[PulseEvent],
+    response_model=list[PulseEvent],
     summary="List Activity Events",
     description="Retrieves recent activity events recorded in DevPulse.",
 )
 async def list_events(
     limit: int = Query(50, ge=1, le=200, description="Max number of events to return"),
-) -> List[PulseEvent]:
+) -> list[PulseEvent]:
     """Returns recorded activity events."""
     return pulse_service.list_events(limit=limit)
 

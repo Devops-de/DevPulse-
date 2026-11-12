@@ -2,45 +2,40 @@
 """
 DevPulse Developer Runner CLI.
 
-A unified runner to set up, develop, test, and run the DevPulse full-stack project.
+A unified runner to set up, develop, test, lint, and run the DevPulse full-stack project.
 Usage:
     python dev.py setup     - Install backend and frontend dependencies
     python dev.py backend   - Run FastAPI server with auto-reload (port 8000)
     python dev.py frontend  - Run Vite React frontend dev server (port 5173)
     python dev.py dev       - Run both backend & frontend concurrently
     python dev.py test      - Run backend unit tests
+    python dev.py lint      - Run backend linter (ruff) & frontend typecheck (tsc)
     python dev.py check     - Check environment prerequisites
 """
 
 import argparse
-import os
+import contextlib
 import shutil
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 # Ensure UTF-8 output encoding across Windows consoles
 if hasattr(sys.stdout, "reconfigure"):
-    try:
+    with contextlib.suppress(Exception):
         sys.stdout.reconfigure(encoding="utf-8")
-    except Exception:
-        pass
 
 ROOT_DIR = Path(__file__).resolve().parent
 BACKEND_DIR = ROOT_DIR / "backend"
 FRONTEND_DIR = ROOT_DIR / "frontend"
 IS_WINDOWS = sys.platform.startswith("win")
 
-# Determine venv python & pip paths
 if IS_WINDOWS:
     VENV_PYTHON = ROOT_DIR / ".venv" / "Scripts" / "python.exe"
-    VENV_UVICORN = ROOT_DIR / ".venv" / "Scripts" / "uvicorn.exe"
-    VENV_PYTEST = ROOT_DIR / ".venv" / "Scripts" / "pytest.exe"
     NPM_CMD = "npm.cmd" if shutil.which("npm.cmd") else "npm"
 else:
     VENV_PYTHON = ROOT_DIR / ".venv" / "bin" / "python"
-    VENV_UVICORN = ROOT_DIR / ".venv" / "bin" / "uvicorn"
-    VENV_PYTEST = ROOT_DIR / ".venv" / "bin" / "pytest"
     NPM_CMD = "npm"
 
 
@@ -51,14 +46,7 @@ def get_active_python() -> str:
     return sys.executable
 
 
-def run_command(cmd, cwd=None, env=None) -> int:
-    """Runs a shell command and returns exit code."""
-    printable = " ".join(cmd) if isinstance(cmd, list) else cmd
-    print(f"\n[*] [DevPulse] Running: {printable}")
-    return subprocess.call(cmd, cwd=cwd or ROOT_DIR, env=env)
-
-
-def cmd_check(args):
+def cmd_check(_args: argparse.Namespace) -> int:
     """Checks system prerequisites."""
     print("==========================================")
     print(" [*] DevPulse Environment Diagnostic Check ")
@@ -73,11 +61,13 @@ def cmd_check(args):
     print(f"NPM: {'Installed (' + npm_path + ')' if npm_path else 'Not found'}")
 
     venv_ok = VENV_PYTHON.exists()
-    print(f"Virtualenv (.venv): {'Ready' if venv_ok else 'Not created (run: python dev.py setup)'}")
+    venv_status = "Ready" if venv_ok else "Not created (run: python dev.py setup)"
+    print(f"Virtualenv (.venv): {venv_status}")
     print("==========================================")
+    return 0
 
 
-def cmd_setup(args):
+def cmd_setup(_args: argparse.Namespace) -> int:
     """Sets up Python virtual environment and installs dependencies."""
     print("\n[*] Setting up DevPulse...")
 
@@ -95,33 +85,33 @@ def cmd_setup(args):
 
     # 2. Upgrade pip and install backend dependencies
     print("\n[+] Installing backend dependencies from backend/requirements.txt ...")
-    pip_install = [py_bin, "-m", "pip", "install", "--upgrade", "pip"]
-    subprocess.call(pip_install)
+    subprocess.call([py_bin, "-m", "pip", "install", "--upgrade", "pip"])
 
     reqs_file = BACKEND_DIR / "requirements.txt"
-    res = subprocess.call([py_bin, "-m", "pip", "install", "-r", str(reqs_file)])
-    if res != 0:
+    backend_res = subprocess.call([py_bin, "-m", "pip", "install", "-r", str(reqs_file)])
+    if backend_res != 0:
         print("[!] Backend dependency install finished with warnings or errors.")
-    else:
-        print("[v] Backend dependencies installed.")
+        return backend_res
+    print("[v] Backend dependencies installed.")
 
     # 3. Install frontend dependencies if npm is available
     if shutil.which(NPM_CMD):
         print("\n[+] Installing frontend dependencies in frontend/ ...")
-        res = subprocess.call([NPM_CMD, "install"], cwd=FRONTEND_DIR)
-        if res == 0:
-            print("[v] Frontend dependencies installed.")
-        else:
-            print("[!] Frontend install exited with code", res)
+        frontend_res = subprocess.call([NPM_CMD, "install"], cwd=FRONTEND_DIR)
+        if frontend_res != 0:
+            print("[!] Frontend install exited with code", frontend_res)
+            return frontend_res
+        print("[v] Frontend dependencies installed.")
     else:
         print("\n[!] Node/NPM not found. You can still run the FastAPI backend!")
 
     print("\n[v] Setup complete! To start development:")
     print("   python dev.py dev       (runs backend + frontend)")
     print("   python dev.py backend   (runs backend only at http://localhost:8000)")
+    return 0
 
 
-def cmd_backend(args):
+def cmd_backend(args: argparse.Namespace) -> int:
     """Runs FastAPI backend with uvicorn."""
     py_bin = get_active_python()
     cmd = [
@@ -140,7 +130,7 @@ def cmd_backend(args):
     return subprocess.call(cmd, cwd=BACKEND_DIR)
 
 
-def cmd_frontend(args):
+def cmd_frontend(_args: argparse.Namespace) -> int:
     """Runs Vite dev server."""
     if not shutil.which(NPM_CMD):
         print("[x] npm not found in system PATH. Please install Node.js.")
@@ -149,12 +139,10 @@ def cmd_frontend(args):
     return subprocess.call([NPM_CMD, "run", "dev"], cwd=FRONTEND_DIR)
 
 
-def cmd_dev(args):
+def cmd_dev(args: argparse.Namespace) -> int:
     """Runs both backend and frontend concurrently."""
-    import time
-
     py_bin = get_active_python()
-    processes = []
+    processes: list[subprocess.Popen[bytes]] = []
 
     print("[*] Booting DevPulse Full-Stack Development Environment...")
 
@@ -171,7 +159,10 @@ def cmd_dev(args):
             "--port",
             str(args.port),
         ]
-        print(f"[+] Starting Backend on http://{args.host}:{args.port} (Docs: http://{args.host}:{args.port}/docs)")
+        print(
+            f"[+] Starting Backend on http://{args.host}:{args.port} "
+            f"(Docs: http://{args.host}:{args.port}/docs)"
+        )
         p_back = subprocess.Popen(b_cmd, cwd=BACKEND_DIR)
         processes.append(p_back)
 
@@ -182,60 +173,73 @@ def cmd_dev(args):
             processes.append(p_front)
         else:
             print("[i] Frontend node_modules not detected. Access the embedded dashboard at:")
-            print(f"  👉 http://{args.host}:{args.port}")
+            print(f"  -> http://{args.host}:{args.port}")
             print("  (Run 'python dev.py setup' once to install frontend dependencies)")
 
         print("\n[*] DevPulse is running! Press Ctrl+C to terminate all services.\n")
-        while True:
+        while not any(p.poll() is not None for p in processes):
             time.sleep(1)
-            for p in processes:
-                if p.poll() is not None:
-                    break
 
     except KeyboardInterrupt:
         print("\n[!] Shutting down DevPulse services...")
     finally:
         for p in processes:
-            p.terminate()
-            try:
-                p.wait(timeout=3)
-            except Exception:
-                p.kill()
+            if p.poll() is None:
+                p.terminate()
+                try:
+                    p.wait(timeout=3)
+                except Exception:
+                    p.kill()
         print("[v] All services stopped cleanly.")
+    return 0
 
 
-def cmd_test(args):
+def cmd_test(_args: argparse.Namespace) -> int:
     """Runs backend tests."""
     py_bin = get_active_python()
     cmd = [py_bin, "-m", "pytest", "tests", "-v"]
     return subprocess.call(cmd, cwd=BACKEND_DIR)
 
 
-def main():
+def cmd_lint(_args: argparse.Namespace) -> int:
+    """Runs backend Ruff linter and frontend TypeScript typecheck."""
+    py_bin = get_active_python()
+    ruff_cmd = [
+        py_bin,
+        "-m",
+        "ruff",
+        "check",
+        "--config",
+        str(BACKEND_DIR / "pyproject.toml"),
+        "backend",
+        "dev.py",
+    ]
+    ruff_code = subprocess.call(ruff_cmd, cwd=ROOT_DIR)
+    ts_code = 0
+    if shutil.which(NPM_CMD) and (FRONTEND_DIR / "node_modules").exists():
+        ts_code = subprocess.call([NPM_CMD, "run", "typecheck"], cwd=FRONTEND_DIR)
+    return 0 if (ruff_code == 0 and ts_code == 0) else 1
+
+
+def main() -> None:
     parser = argparse.ArgumentParser(description="DevPulse Developer CLI")
     subparsers = parser.add_subparsers(dest="command", help="Available subcommands")
 
-    # setup
     subparsers.add_parser("setup", help="Set up virtualenv and install dependencies")
-
-    # check
     subparsers.add_parser("check", help="Check system prerequisites and tool versions")
 
-    # backend
     p_back = subparsers.add_parser("backend", help="Run FastAPI backend")
     p_back.add_argument("--host", default="127.0.0.1", help="Host interface")
     p_back.add_argument("--port", type=int, default=8000, help="Port")
 
-    # frontend
     subparsers.add_parser("frontend", help="Run Vite React frontend")
 
-    # dev / full
     p_dev = subparsers.add_parser("dev", help="Run both backend and frontend concurrently")
     p_dev.add_argument("--host", default="127.0.0.1", help="Host interface")
     p_dev.add_argument("--port", type=int, default=8000, help="Port")
 
-    # test
     subparsers.add_parser("test", help="Run pytest test suite")
+    subparsers.add_parser("lint", help="Run code quality linters and type checks")
 
     args = parser.parse_args()
 
@@ -246,6 +250,7 @@ def main():
         "frontend": cmd_frontend,
         "dev": cmd_dev,
         "test": cmd_test,
+        "lint": cmd_lint,
     }
 
     if args.command in commands:

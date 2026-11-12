@@ -1,3 +1,6 @@
+export type PulseEventStatus = 'success' | 'warning' | 'error' | 'info';
+export type ServiceState = 'online' | 'offline' | 'degraded';
+
 export interface HealthResponse {
   status: string;
   app_name: string;
@@ -21,7 +24,7 @@ export interface PulseEvent {
   id: string;
   title: string;
   category: string;
-  status: 'success' | 'warning' | 'error' | 'info' | string;
+  status: PulseEventStatus;
   details?: string | null;
   timestamp: string;
 }
@@ -29,13 +32,13 @@ export interface PulseEvent {
 export interface PulseEventCreate {
   title: string;
   category: string;
-  status: 'success' | 'warning' | 'error' | 'info' | string;
+  status: PulseEventStatus;
   details?: string;
 }
 
 export interface ServiceStatus {
   name: string;
-  status: 'online' | 'offline' | 'degraded' | string;
+  status: ServiceState;
   latency_ms: number;
 }
 
